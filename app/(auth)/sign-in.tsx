@@ -1,17 +1,43 @@
-import { Text, Image, View, ScrollView } from "react-native";
+import { Text, Image, View, ScrollView, Alert } from "react-native";
 import { icons, images } from "@/constants";
 import InputField from "@/components/inputField";
-import { useState } from "react";
+import React, { useState } from "react";
 import CustomButton from "@/components/customButton";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import OAuth from "@/components/oAuth";
+import { useSignIn } from "@clerk/clerk-expo";
 
 const signIn = () => {
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const router = useRouter();
+
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
-  const onSingInPress = async () => {};
+  const onSignInPress = React.useCallback(async () => {
+    if (!isLoaded) return;
+
+    // Start the sign-in process using the email and password provided
+    try {
+      const signInAttempt = await signIn.create({
+        identifier: form.email,
+        password: form.password,
+      });
+
+      // If sign-in process is complete, set the created session as active
+      // and redirect the user
+      if (signInAttempt.status === "complete") {
+        await setActive({ session: signInAttempt.createdSessionId });
+        router.replace("/(root)/(tabs)/home");
+      } else {
+        console.error(JSON.stringify(signInAttempt, null, 2));
+      }
+    } catch (err) {
+      Alert.alert("Error", err.errors[0].longMessage);
+    }
+  }, [isLoaded, form.email, form.password]);
+
   return (
     <ScrollView className="flex-1 bg-white ">
       <View className="flex-1 bg-white">
@@ -40,8 +66,8 @@ const signIn = () => {
             className="mb-6"
           />
           <CustomButton
-            title="sign up"
-            onPress={onSingInPress}
+            title="Log In"
+            onPress={onSignInPress}
             className="mt-6"
           />
           <OAuth />
@@ -51,7 +77,7 @@ const signIn = () => {
           >
             {" "}
             <Text>Don't Have an Account? </Text>
-            <Text className="text-primary-500">Log In</Text>
+            <Text className="text-primary-500">Sign Up</Text>
           </Link>
         </View>
 
