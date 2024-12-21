@@ -132,7 +132,7 @@ const Home = () => {
 
   const [hasPermissions, setHasPermissions] = useState(false);
 
-  // const handleSignOut = () => {};
+  const handleSignOut = () => {};
   const handleDestinationPress = (location: {
     latitude: number;
     longitude: number;
