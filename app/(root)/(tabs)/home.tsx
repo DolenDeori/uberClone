@@ -12,9 +12,10 @@ import { icons, images } from "@/constants";
 import { useUser } from "@clerk/clerk-expo";
 import GoogleTextInput from "@/components/googleTextInput";
 import Map from "@/components/map";
-// import { useLocationStore } from "@/store";
 import { useState, useEffect } from "react";
 import * as Location from "expo-location";
+import { useLocationStore } from "@/store";
+import { router } from "expo-router";
 
 const recentRides = [
   {
@@ -124,36 +125,47 @@ const recentRides = [
 ];
 
 const Home = () => {
-  // const { setUserLocation, setDestinationLocation } = useLocationStore();
+  const { setUserLocation, setDestinationLocation } = useLocationStore();
+
   const { user } = useUser();
   const loading = false;
-  // const [hasPermissions, setHasPermissions] = useState(false);
+
+  const [hasPermissions, setHasPermissions] = useState(false);
+
   // const handleSignOut = () => {};
-  const handleDestinationPress = () => {};
-  // useEffect(() => {
-  //   const requestLocation = async () => {
-  //     let { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== "granted") {
-  //       setHasPermissions(false);
-  //       return;
-  //     }
+  const handleDestinationPress = (location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  }) => {
+    setDestinationLocation(location);
+    router.push("/(root)/find-ride");
+  };
 
-  //     let location = await Location.getCurrentPositionAsync();
-  //     const address = await Location.reverseGeocodeAsync({
-  //       latitude: location.coords?.longitude!,
-  //       longitude: location.coords?.latitude!,
-  //     });
+  useEffect(() => {
+    const requestLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setHasPermissions(false);
+        return;
+      }
 
-  //     setUserLocation({
-  //       latitude: 37.78825,
-  //       longitude: -122.4324,
-  //       // latitude: location.coords?.latitude,
-  //       // longitude: location.coords?.latitude,
-  //       address: `${address[0].name}, ${address[0].region}`,
-  //     });
-  //   };
-  //   requestLocation();
-  // }, []);
+      let location = await Location.getCurrentPositionAsync();
+      const address = await Location.reverseGeocodeAsync({
+        latitude: location.coords?.latitude!,
+        longitude: location.coords?.longitude!,
+      });
+
+      setUserLocation({
+        // latitude: location.coords?.latitude,
+        // longitude: location.coords?.longitude,
+        latitude: 37.78825,
+        longitude: -122.4324,
+        address: `${address[0].name}, ${address[0].region}`,
+      });
+    };
+    requestLocation();
+  }, []);
 
   return (
     <SafeAreaView className="bg-general-500">
@@ -193,11 +205,13 @@ const Home = () => {
                 <Image source={icons.out} className="w-4 h-4" />
               </TouchableOpacity>
             </View>
+
             <GoogleTextInput
               icon={icons.search}
               containerStyle="bg-white shadow-neutral-300"
               handlePress={handleDestinationPress}
             />
+
             <>
               <Text className="text-xl font-JakartaBold mt-5 mb-3">
                 Your Current Location

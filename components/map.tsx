@@ -1,10 +1,14 @@
-// import { icons } from "@/constants";
-// import { calculateRegion, generateMarkersFromData } from "@/lib/map";
-// import { useDriverStore, useLocationStore } from "@/store";
-// import { MarkerData } from "@/types/type";
-// import { useEffect, useState } from "react";
-import { Text, StyleSheet } from "react-native";
-import MapView, { PROVIDER_DEFAULT } from "react-native-maps";
+import { icons } from "@/constants";
+import { calculateRegion, generateMarkersFromData } from "@/lib/map";
+import { useDriverStore, useLocationStore } from "@/store";
+import { MarkerData } from "@/types/type";
+import { useEffect, useState } from "react";
+import { Text, StyleSheet, View } from "react-native";
+import MapView, {
+  Marker,
+  PROVIDER_DEFAULT,
+  PROVIDER_GOOGLE,
+} from "react-native-maps";
 
 const drivers = [
   {
@@ -54,24 +58,74 @@ const drivers = [
 ];
 
 const Map = () => {
+  const {
+    userLongitude,
+    userLatitude,
+    destinationLatitude,
+    destinationLongitude,
+  } = useLocationStore();
+
+  const { selectedDriver, setDrivers } = useDriverStore();
+  const [markers, setMarkers] = useState<MarkerData[]>([]);
+
+  const region = calculateRegion({
+    userLongitude,
+    userLatitude,
+    destinationLongitude,
+    destinationLatitude,
+  });
+
+  useEffect(() => {
+    if (Array.isArray(drivers)) {
+      if (!userLatitude || !userLongitude) return;
+      const newMarkers = generateMarkersFromData({
+        data: drivers,
+        userLatitude,
+        userLongitude,
+      });
+
+      setMarkers(newMarkers);
+    }
+  }, [drivers]);
+
   return (
-    <MapView
-      style={styles.map}
-      provider={PROVIDER_DEFAULT}
-      tintColor="black"
-      mapType="mutedStandard"
-      showsPointsOfInterest={false}
-    >
-      <Text>Map</Text>
-    </MapView>
+    <View style={styles.container}>
+      <MapView
+        style={styles.map}
+        provider={PROVIDER_GOOGLE}
+        mapType="standard"
+        showsUserLocation={true}
+        initialRegion={region}
+        showsMyLocationButton={true}
+      >
+        {markers.map((marker) => (
+          <Marker
+            key={marker.id}
+            coordinate={{
+              latitude: marker.latitude,
+              longitude: marker.longitude,
+            }}
+            title={marker.title}
+            image={
+              selectedDriver === marker.id ? icons.selectedMarker : icons.marker
+            }
+          />
+        ))}
+      </MapView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  map: {
-    width: "100%",
+  container: {
+    ...StyleSheet.absoluteFillObject,
     height: "100%",
-    borderRadius: "10px",
+    overflow: "hidden",
+    borderRadius: 5,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 20,
   },
 });
 
