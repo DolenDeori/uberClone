@@ -12,6 +12,9 @@ import { icons, images } from "@/constants";
 import { useUser } from "@clerk/clerk-expo";
 import GoogleTextInput from "@/components/googleTextInput";
 import Map from "@/components/map";
+// import { useLocationStore } from "@/store";
+import { useState, useEffect } from "react";
+import * as Location from "expo-location";
 
 const recentRides = [
   {
@@ -121,11 +124,37 @@ const recentRides = [
 ];
 
 const Home = () => {
+  // const { setUserLocation, setDestinationLocation } = useLocationStore();
   const { user } = useUser();
   const loading = false;
-  const handleSignOut = () => {};
+  // const [hasPermissions, setHasPermissions] = useState(false);
+  // const handleSignOut = () => {};
   const handleDestinationPress = () => {};
-  console.log(user);
+  // useEffect(() => {
+  //   const requestLocation = async () => {
+  //     let { status } = await Location.requestForegroundPermissionsAsync();
+  //     if (status !== "granted") {
+  //       setHasPermissions(false);
+  //       return;
+  //     }
+
+  //     let location = await Location.getCurrentPositionAsync();
+  //     const address = await Location.reverseGeocodeAsync({
+  //       latitude: location.coords?.longitude!,
+  //       longitude: location.coords?.latitude!,
+  //     });
+
+  //     setUserLocation({
+  //       latitude: 37.78825,
+  //       longitude: -122.4324,
+  //       // latitude: location.coords?.latitude,
+  //       // longitude: location.coords?.latitude,
+  //       address: `${address[0].name}, ${address[0].region}`,
+  //     });
+  //   };
+  //   requestLocation();
+  // }, []);
+
   return (
     <SafeAreaView className="bg-general-500">
       <FlatList
